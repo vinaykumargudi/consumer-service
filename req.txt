@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pydantic
+kafka-python
+boto3
+confluent-kafka
+confluent_kafka
+pandas
+websockets
