@@ -1,0 +1,24 @@
+# values.yaml
+replicaCount: 1
+image:
+  repository: sentdexcloud9/consumer-service
+  tag: latest
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 8001
+
+ingress:
+  enabled: true
+  host: cons.devopsculture.in
+
+env:
+  AWS_ACCESS_KEY_ID: "AKIAQXUIX6ZL45CWOUEG"
+  AWS_SECRET_ACCESS_KEY: "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"
+  AWS_DEFAULT_REGION: "us-east-1"
+  KAFKA_USERNAME: "doadmin"
+  KAFKA_PASSWORD: "AVNS_MU-OpOx1amWi6N9dvpT"
+  KAFKA_BROKER: "db-kafka-nyc3-06617-do-user-9992548-0.i.db.ondigitalocean.com:25073"
+  KAFKA_TOPIC: "stock_transactions"
+  CA_CERT_PATH: "/app/crt.pem"

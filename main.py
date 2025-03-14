@@ -26,7 +26,8 @@ os.environ["AWS_DEFAULT_REGION"] = AWS_DEFAULT_REGION
 # Kafka Configuration
 KAFKA_TOPIC = "stock_transactions"
 KAFKA_USERNAME = "doadmin"
-CA_CERT_PATH = "/Users/gkumar/producer-service/crt.pem"
+#CA_CERT_PATH = "/Users/gkumar/producer-service/crt.pem"
+CA_CERT_PATH = "/app/crt.pem"
 KAFKA_PASSWORD = "AVNS_MU-OpOx1amWi6N9dvpT"
 KAFKA_BROKER = "db-kafka-nyc3-06617-do-user-9992548-0.i.db.ondigitalocean.com:25073"
 

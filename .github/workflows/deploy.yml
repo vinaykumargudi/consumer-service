@@ -1,0 +1,45 @@
+name: Build, Push Docker Image & Deploy with Helm
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: sentdexcloud9/consumer-service:latest
+
+      - name: Install Helm
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          helm version
+
+
+
+
+      - name: Upgrade Helm deployment
+        if: success()  # Runs only if the Kubernetes context setup succeeded
+        run: |
+          export KUBECONFIG=$PWD/k8s-1-32-1-do-0-sfo2-1740686624302-kubeconfig.yaml  # Reference your repo kubeconfig file
+          kubectl config current-context  # Verify the context
+          helm upgrade --install consumer-service ./helm_consumer_chart --namespace=default

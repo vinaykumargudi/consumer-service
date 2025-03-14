@@ -1,0 +1,9 @@
+# templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: consumer-service-config
+data:
+  AWS_DEFAULT_REGION: "{{ .Values.env.AWS_DEFAULT_REGION }}"
+  KAFKA_TOPIC: "{{ .Values.env.KAFKA_TOPIC }}"
+  CA_CERT_PATH: "{{ .Values.env.CA_CERT_PATH }}"
