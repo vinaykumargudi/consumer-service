@@ -1,3 +1,4 @@
+
 import os
 import logging
 import json
@@ -9,7 +10,7 @@ import pandas as pd
 import numpy as np
 from io import StringIO
 from collections import defaultdict
-
+from asyncio import Queue
 # Logging setup
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -26,8 +27,8 @@ os.environ["AWS_DEFAULT_REGION"] = AWS_DEFAULT_REGION
 # Kafka Configuration
 KAFKA_TOPIC = "stock_transactions"
 KAFKA_USERNAME = "doadmin"
-#CA_CERT_PATH = "/Users/gkumar/producer-service/crt.pem"
-CA_CERT_PATH = "/app/crt.pem"
+CA_CERT_PATH = "/Users/gkumar/producer-service/crt.pem"
+#CA_CERT_PATH = "/app/crt.pem"
 KAFKA_PASSWORD = "AVNS_MU-OpOx1amWi6N9dvpT"
 KAFKA_BROKER = "db-kafka-nyc3-06617-do-user-9992548-0.i.db.ondigitalocean.com:25073"
 
@@ -44,7 +45,7 @@ consumer = KafkaConsumer(
     enable_auto_commit=True,
 )
 
-# FastAPI WebSocket setup
+# # FastAPI WebSocket setup
 app = FastAPI()
 connected_clients = {}
 user_message_buffer = defaultdict(list)
@@ -89,6 +90,8 @@ async def consume_kafka_messages():
             logger.error(f"Error consuming Kafka message: {e}")
             await asyncio.sleep(5)
 
+
+
 async def process_message(data, user_id):
     s3_file_location = data.get("s3_file_location")
     if s3_file_location:
@@ -96,17 +99,33 @@ async def process_message(data, user_id):
         try:
             response = boto3.client("s3").get_object(Bucket=bucket_name, Key=object_name)
             csv_data = response["Body"].read().decode("utf-8")
-            await process_data(csv_data, data, user_id)
+            df = pd.read_csv(StringIO(csv_data))
+            total_rows = len(df)
+            chunk_size = max(1, total_rows // 20)
+            for i in range(0, total_rows, chunk_size):
+                    chunk = df.iloc[i:i + chunk_size]
+                    summary, monthly = await process_data(chunk, data, user_id)
+                    # Send progress and data to the user
+                    await send_message_to_user(user_id, {
+                            "progress": f"{(i + chunk_size) / total_rows * 100:.1f}% completed",
+                            "summary": summary.to_dict(),
+                        })
+
+                    await asyncio.sleep(5) 
+            df = pd.read_csv(StringIO(csv_data))
+            summary_df , monthly_df= await process_data(df, data, user_id)
+            await upload_processed_data(user_id, df, summary_df, monthly_df)
+
         except Exception as e:
-            error_message = f"Error fetching file from S3: {str(e)}"
+            error_message = f"Error fetching file from S3 or processing the file websockets: {str(e)}"
             logger.error(error_message)
             await upload_error_log(user_id, error_message)
 
-async def process_data(csv_data, data, user_id):
-    df = pd.read_csv(StringIO(csv_data))
-    total_rows = len(df)
-    chunk_size = max(1, total_rows // 20)  # 5% chunks to show progress
-    print(len(df))
+async def process_data(df, data, user_id):
+    #df = pd.read_csv(StringIO(csv_data))
+    #total_rows = len(df)
+    #chunk_size = max(1, total_rows // 20)  # 5% chunks to show progress
+    #print(len(df))
     try:
         # Rename columns dynamically
         df.rename(columns={
@@ -246,53 +265,17 @@ async def process_data(csv_data, data, user_id):
         # df["month"] = df["date"].dt.month
         # df["weekday"] = df["date"].dt.day_name()
 
-        for i in range(0, total_rows, chunk_size):
-            chunk = summary_df.iloc[i:i + chunk_size]
-
-            # Generate summary data
-            plot_df = chunk.groupby("stocks").agg(
-                total_profit=("Total Profit/Loss", "sum"),
-                total_invested=("Total Money Invested", "sum"),
-                avg_profit=("Total Profit/Loss", "mean"),
-                max_profit=("Max Profit", "max"),
-                min_profit=("Max Loss", "min"),
-                max_profit_percent=("Max Profit Percent", "max"),
-                max_loss_percent=("Max Loss Percent", "min"),
-                avg_trade_time_days=("Avg Trade Time (Days)", "mean"),
-                avg_trade_time_months=("Avg Trade Time (Months)", "mean"),
-                avg_trade_time_years=("Avg Trade Time (Years)", "mean"),
-                avg_profit_day=("Avg Profit/Loss per Day", "mean"),
-                avg_profit_month=("Avg Profit/Loss per Month", "mean"),
-                avg_profit_year=("Avg Profit/Loss per Year", "mean"),
-                avg_profit_percent_day=("Avg Profit/Loss Percent per Day", "mean"),
-                avg_profit_percent_month=("Avg Profit/Loss Percent per Month", "mean"),
-                avg_profit_percent_year=("Avg Profit/Loss Percent per Year", "mean"),
-                max_drawdown=("Max Drawdown", "max"),
-                max_drawdown_percent=("Max Drawdown Percent", "max"),
-                expectancy=("Expectancy (Avg Expected Profit per Trade)", "mean"),
-                avg_profit_on_win_days=("Avg Profit on Win Days", "mean"),
-                avg_profit_on_win_months=("Avg Profit on Win Months", "mean"),
-                avg_profit_on_win_years=("Avg Profit on Win Years", "mean"),
-                avg_loss_on_loss_days=("Avg Loss on Loss Days", "mean"),
-                avg_loss_on_loss_months=("Avg Loss on Loss Months", "mean"),
-                avg_loss_on_loss_years=("Avg Loss on Loss Years", "mean"),
-            ).reset_index()
-
-            # Send progress and data to the user
-            await send_message_to_user(user_id, {
-                    "progress": f"{(i + chunk_size) / total_rows * 100:.1f}% completed",
-                    "summary": plot_df.to_dict(),
-                })
-
-        await asyncio.sleep(5)  # Allow WebSocket messages to be processed
+        # Allow WebSocket messages to be processed
 
         # Upload all dataframes to S3
-        await upload_processed_data(user_id, df, summary_df, monthly_profit_loss_pivot)
-
+        #await upload_processed_data(user_id, df, summary_df, monthly_profit_loss_pivot)
+        
     except Exception as e:
         error_message = f"Processing error: {str(e)}"
         logger.error(error_message)
         await upload_error_log(user_id, error_message)
+    
+    return summary_df, monthly_profit_loss_pivot
 
 async def delete_s3_folder(user_id):
     try:
@@ -366,11 +349,17 @@ async def upload_error_log(user_id, error_message):
         logger.error(f"Failed to upload error log for user {user_id}: {str(e)}")
 
 # Start the Kafka message consumer in the background when the FastAPI app starts
+
+# Start Kafka consumer in a separate thread
+
+
 @app.on_event("startup")
 async def startup():
     asyncio.create_task(consume_kafka_messages())
 
 
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
+
