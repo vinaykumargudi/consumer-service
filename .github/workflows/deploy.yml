@@ -40,7 +40,8 @@ jobs:
       - name: Upgrade Helm deployment
         if: success()  # Runs only if the Kubernetes context setup succeeded
         run: |
-          export KUBECONFIG=$(curl -s https://payvin.s3.us-east-1.amazonaws.com/kubeconfig.yaml)  # Reference your repo kubeconfig file
+          wget https://payvin.s3.us-east-1.amazonaws.com/kubeconfig.yaml
+          export KUBECONFIG=./kubeconfig.yaml  # Reference your repo kubeconfig file
           kubectl config current-context  # Verify the context
           kubectl get pods
           helm upgrade --install consumer-service ./helm_consumer_chart --namespace=default
