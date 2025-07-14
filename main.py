@@ -16,8 +16,8 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # AWS Credentials
-AWS_ACCESS_KEY_ID = "AKIAQXUIX6ZL45CWOUEG"
-AWS_SECRET_ACCESS_KEY = "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"
+AWS_ACCESS_KEY_ID = "AKIAUNQ3Y2OW2P7FI2UM"
+AWS_SECRET_ACCESS_KEY = "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"
 AWS_DEFAULT_REGION = "us-east-1"
 
 os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
@@ -29,8 +29,8 @@ KAFKA_TOPIC = "stock_transactions"
 KAFKA_USERNAME = "doadmin"
 #CA_CERT_PATH = "/Users/gkumar/producer-service/crt.pem"
 CA_CERT_PATH = "/app/crt.pem"
-KAFKA_PASSWORD = "AVNS_MU-OpOx1amWi6N9dvpT"
-KAFKA_BROKER = "db-kafka-nyc3-06617-do-user-9992548-0.i.db.ondigitalocean.com:25073"
+KAFKA_PASSWORD = "AVNS_D6sGVMQYojYg6VUSdZE"
+KAFKA_BROKER = "db-kafka-nyc3-35655-do-user-23722714-0.j.db.ondigitalocean.com:25073"
 
 consumer = KafkaConsumer(
     KAFKA_TOPIC,
@@ -281,12 +281,12 @@ async def delete_s3_folder(user_id):
     try:
         # List all objects within the user's folder
         s3_client = boto3.client("s3")
-        result = s3_client.list_objects_v2(Bucket="payvin", Prefix=f"{user_id}/")
+        result = s3_client.list_objects_v2(Bucket="publicpayvin", Prefix=f"{user_id}/")
         
         if "Contents" in result:
             # Delete all objects in the folder
             delete_objects = {"Objects": [{"Key": obj["Key"]} for obj in result["Contents"]]}
-            s3_client.delete_objects(Bucket="payvin", Delete=delete_objects)
+            s3_client.delete_objects(Bucket="publicpayvin", Delete=delete_objects)
             logger.info(f"Deleted existing folder for user {user_id}")
         else:
             logger.info(f"No existing folder found for user {user_id}")
@@ -305,7 +305,7 @@ async def upload_processed_data(user_id, df, summary_df, monthly_profit_loss_piv
         processed_csv.seek(0)
         processed_s3_path = f"{user_id}/processed_data.csv"
         boto3.client("s3").put_object(
-            Bucket="payvin", Key=processed_s3_path, Body=processed_csv.getvalue()
+            Bucket="publicpayvin", Key=processed_s3_path, Body=processed_csv.getvalue()
         )
 
         # Upload summary_df
@@ -314,7 +314,7 @@ async def upload_processed_data(user_id, df, summary_df, monthly_profit_loss_piv
         summary_csv.seek(0)
         summary_s3_path = f"{user_id}/summary_data.csv"
         boto3.client("s3").put_object(
-            Bucket="payvin", Key=summary_s3_path, Body=summary_csv.getvalue()
+            Bucket="publicpayvin", Key=summary_s3_path, Body=summary_csv.getvalue()
         )
 
         # Upload monthly_profit_loss_pivot profit data
