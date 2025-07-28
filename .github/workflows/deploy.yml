@@ -40,7 +40,7 @@ jobs:
       - name: Upgrade Helm deployment
         if: success()  # Runs only if the Kubernetes context setup succeeded
         run: |
-          wget https://payvin.s3.us-east-1.amazonaws.com/kubeconfig.yaml
+          wget https://publicpayvin.s3.us-east-1.amazonaws.com/kubeconfig.yaml
           export KUBECONFIG=./kubeconfig.yaml  # Reference your repo kubeconfig file
           kubectl config current-context  # Verify the context
           kubectl get pods
