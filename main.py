@@ -16,8 +16,8 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # AWS Credentials
-AWS_ACCESS_KEY_ID = "AKIAUNQ3Y2OW2P7FI2UM"
-AWS_SECRET_ACCESS_KEY = "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"
+AWS_ACCESS_KEY_ID = "AAKIAUNQ3Y2OWZ3DPH3V4"
+AWS_SECRET_ACCESS_KEY = "V8Hs5r2QjYD3lFO8tYdJRBMLJg6+unL+MxkgroX6"
 AWS_DEFAULT_REGION = "us-east-1"
 
 os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
@@ -29,8 +29,8 @@ KAFKA_TOPIC = "stock_transactions"
 KAFKA_USERNAME = "doadmin"
 #CA_CERT_PATH = "/Users/gkumar/producer-service/crt.pem"
 CA_CERT_PATH = "/app/crt.pem"
-KAFKA_PASSWORD = "AVNS_D6sGVMQYojYg6VUSdZE"
-KAFKA_BROKER = "db-kafka-nyc3-35655-do-user-23722714-0.j.db.ondigitalocean.com:25073"
+KAFKA_PASSWORD = "AVNS_opi25-C-ynWHl2nDb9O"
+KAFKA_BROKER = "db-kafka-nyc3-34802-do-user-24247100-0.f.db.ondigitalocean.com:25073"
 
 consumer = KafkaConsumer(
     KAFKA_TOPIC,
