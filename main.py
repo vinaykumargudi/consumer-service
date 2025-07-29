@@ -16,8 +16,8 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # AWS Credentials
-AWS_ACCESS_KEY_ID = "AAKIAUNQ3Y2OWZ3DPH3V4"
-AWS_SECRET_ACCESS_KEY = "V8Hs5r2QjYD3lFO8tYdJRBMLJg6+unL+MxkgroX6"
+AWS_ACCESS_KEY_ID = "AKIAUNQ3Y2OWWWXSTI5E"
+AWS_SECRET_ACCESS_KEY = "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"
 AWS_DEFAULT_REGION = "us-east-1"
 
 os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
@@ -281,12 +281,12 @@ async def delete_s3_folder(user_id):
     try:
         # List all objects within the user's folder
         s3_client = boto3.client("s3")
-        result = s3_client.list_objects_v2(Bucket="publicpayvin", Prefix=f"{user_id}/")
+        result = s3_client.list_objects_v2(Bucket="testmytrade", Prefix=f"{user_id}/")
         
         if "Contents" in result:
             # Delete all objects in the folder
             delete_objects = {"Objects": [{"Key": obj["Key"]} for obj in result["Contents"]]}
-            s3_client.delete_objects(Bucket="publicpayvin", Delete=delete_objects)
+            s3_client.delete_objects(Bucket="testmytrade", Delete=delete_objects)
             logger.info(f"Deleted existing folder for user {user_id}")
         else:
             logger.info(f"No existing folder found for user {user_id}")
@@ -305,7 +305,7 @@ async def upload_processed_data(user_id, df, summary_df, monthly_profit_loss_piv
         processed_csv.seek(0)
         processed_s3_path = f"{user_id}/processed_data.csv"
         boto3.client("s3").put_object(
-            Bucket="publicpayvin", Key=processed_s3_path, Body=processed_csv.getvalue()
+            Bucket="testmytrade", Key=processed_s3_path, Body=processed_csv.getvalue()
         )
 
         # Upload summary_df
@@ -314,7 +314,7 @@ async def upload_processed_data(user_id, df, summary_df, monthly_profit_loss_piv
         summary_csv.seek(0)
         summary_s3_path = f"{user_id}/summary_data.csv"
         boto3.client("s3").put_object(
-            Bucket="publicpayvin", Key=summary_s3_path, Body=summary_csv.getvalue()
+            Bucket="testmytrade", Key=summary_s3_path, Body=summary_csv.getvalue()
         )
 
         # Upload monthly_profit_loss_pivot profit data
@@ -323,7 +323,7 @@ async def upload_processed_data(user_id, df, summary_df, monthly_profit_loss_piv
         monthly_profit_loss_pivot_csv.seek(0)
         monthly_profit_loss_pivot_s3_path = f"{user_id}/monthly_profit_loss_pivot_profit.csv"
         boto3.client("s3").put_object(
-            Bucket="payvin", Key=monthly_profit_loss_pivot_s3_path, Body=monthly_profit_loss_pivot_csv.getvalue()
+            Bucket="testmytrade", Key=monthly_profit_loss_pivot_s3_path, Body=monthly_profit_loss_pivot_csv.getvalue()
         )
 
 
@@ -342,7 +342,7 @@ async def upload_error_log(user_id, error_message):
         error_log.seek(0)
         error_log_path = f"{user_id}/error_log.txt"
         boto3.client("s3").put_object(
-            Bucket="payvin", Key=error_log_path, Body=error_log.getvalue()
+            Bucket="testmytrade", Key=error_log_path, Body=error_log.getvalue()
         )
         logger.info(f"Error log uploaded for user {user_id}.")
     except Exception as e:
