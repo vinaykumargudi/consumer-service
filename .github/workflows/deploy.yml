@@ -45,4 +45,4 @@ jobs:
           kubectl config current-context  # Verify the context
           kubectl get pods
           helm upgrade --install consumer-service ./helm_consumer_chart --namespace=default
-          kubectl rollout restart deployment consumer-service -n default
+          kubectl rollout restart deployment consumer-service-consumer-service -n default
