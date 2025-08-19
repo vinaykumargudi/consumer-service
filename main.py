@@ -29,8 +29,8 @@ KAFKA_TOPIC = "stock_transactions"
 KAFKA_USERNAME = "doadmin"
 #CA_CERT_PATH = "/Users/gkumar/producer-service/crt.pem"
 CA_CERT_PATH = "/app/crt.pem"
-KAFKA_PASSWORD = "AVNS_opi25-C-ynWHl2nDb9O"
-KAFKA_BROKER = "db-kafka-nyc3-34802-do-user-24247100-0.f.db.ondigitalocean.com:25073"
+KAFKA_PASSWORD = "AVNS_3LhIyTE_bG2LbwIQsLG"
+KAFKA_BROKER = "db-kafka-nyc3-13287-do-user-23722714-0.h.db.ondigitalocean.com:25073"
 
 consumer = KafkaConsumer(
     KAFKA_TOPIC,
